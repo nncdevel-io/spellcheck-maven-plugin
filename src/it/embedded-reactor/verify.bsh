@@ -1,0 +1,9 @@
+import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
+for (String module : new String[]{"first", "second"}) {
+    String report = Files.readString(new File(basedir, module + "/target/spellcheck/spellcheck-report.txt").toPath(), StandardCharsets.UTF_8);
+    if (!report.contains("Files checked: 1") || !report.contains("Errors found: 0")) {
+        throw new RuntimeException("Unexpected module result: " + module + " " + report);
+    }
+}
+return true;

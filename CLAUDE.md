@@ -6,6 +6,7 @@
 > **Build Tool**: Apache Maven
 
 ## Table of Contents
+
 - [Project Overview](#project-overview)
 - [Current State](#current-state)
 - [Repository Structure](#repository-structure)
@@ -23,9 +24,11 @@
 **spellcheck-maven-plugin** is a Maven plugin designed to provide spell-checking capabilities for Maven-based projects.
 
 ### Purpose
+
 This plugin will integrate spell-checking into the Maven build lifecycle, allowing developers to catch spelling errors in documentation, comments, and potentially source code during the build process.
 
 ### Key Features (Planned)
+
 - Integration with Maven build lifecycle
 - Configurable spell-check rules
 - Support for multiple languages/dictionaries
@@ -41,11 +44,13 @@ This plugin will integrate spell-checking into the Maven build lifecycle, allowi
 The repository is currently in its initial state with only a README.md file. The project structure and core implementation are yet to be created.
 
 ### What Exists
+
 - `README.md` - Basic project identification file
 - Git repository initialized
 - Remote origin configured
 
 ### What Needs to Be Created
+
 - [ ] Maven project structure (`pom.xml`)
 - [ ] Source directories (`src/main/java`, `src/test/java`)
 - [ ] Maven Mojo classes
@@ -59,7 +64,7 @@ The repository is currently in its initial state with only a README.md file. The
 
 ### Expected Structure (Once Developed)
 
-```
+```text
 spellcheck-maven-plugin/
 ├── .git/                           # Git repository data
 ├── .gitignore                      # Git ignore patterns
@@ -108,8 +113,9 @@ spellcheck-maven-plugin/
 ### Prerequisites
 
 Before starting development, ensure:
-- JDK 8 or higher is installed (11+ recommended)
-- Maven 3.6.0+ is installed
+
+- JDK 17 or higher is installed
+- Maven 3.8.1+ is installed
 - Git is configured
 
 ### Initial Setup Steps
@@ -251,7 +257,7 @@ public class SpellCheckMojo extends AbstractMojo {
 - **Indentation**: 4 spaces (no tabs)
 - **Line Length**: Maximum 120 characters
 - **Encoding**: UTF-8 for all source files
-- **Java Version**: Target Java 8 compatibility (for broader Maven version support)
+- **Java Version**: Target Java 17; verify on Java 17, 21, and 25
 
 ### Naming Conventions
 
@@ -335,7 +341,7 @@ Use Maven Invoker Plugin for integration tests:
 
 ### Test Structure
 
-```
+```text
 src/test/
 ├── java/
 │   └── io/nncdevel/maven/spellcheck/
@@ -362,7 +368,7 @@ src/test/
 
 Follow conventional commits format:
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -371,6 +377,7 @@ Follow conventional commits format:
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -379,7 +386,8 @@ Types:
 - `chore`: Build process, dependencies
 
 Examples:
-```
+
+```text
 feat(mojo): Add basic spell-check Mojo implementation
 
 Implement the core SpellCheckMojo class with basic
@@ -391,6 +399,7 @@ Refs: #1
 ### What to Commit
 
 **DO Commit**:
+
 - Source code (`src/`)
 - Build configuration (`pom.xml`)
 - Documentation (`.md` files)
@@ -398,6 +407,7 @@ Refs: #1
 - Configuration files
 
 **DON'T Commit**:
+
 - Build output (`target/`)
 - IDE-specific files (`.idea/`, `.eclipse/`, etc.)
 - OS-specific files (`.DS_Store`, `Thumbs.db`)
@@ -460,6 +470,7 @@ private boolean failOnError;
 ```
 
 Users can then configure:
+
 ```xml
 <configuration>
     <failOnError>false</failOnError>
@@ -467,6 +478,7 @@ Users can then configure:
 ```
 
 Or via command line:
+
 ```bash
 mvn spellcheck:check -Dspellcheck.failOnError=false
 ```
@@ -474,16 +486,19 @@ mvn spellcheck:check -Dspellcheck.failOnError=false
 ### Debugging the Plugin
 
 1. **Build and install locally**:
+
    ```bash
    mvn clean install
    ```
 
 2. **Enable Maven debug output**:
+
    ```bash
    mvn -X spellcheck:check
    ```
 
 3. **Remote debugging**:
+
    ```bash
    mvnDebug spellcheck:check
    # Then attach debugger to port 8000
@@ -559,18 +574,21 @@ mvn install -DskipTests
 ## Resources
 
 ### Maven Plugin Development
+
 - [Maven Plugin Documentation](https://maven.apache.org/plugin-developers/index.html)
 - [Maven Plugin API](https://maven.apache.org/ref/current/maven-plugin-api/)
 - [Maven Plugin Testing](https://maven.apache.org/plugin-testing/)
 - [Mojo API Specification](https://maven.apache.org/developers/mojo-api-specification.html)
 
 ### Spell-Checking Libraries (Java)
+
 - [LanguageTool](https://languagetool.org/) - Open source grammar and spell checker
 - [Hunspell Java](https://github.com/dren-dk/HunspellJNA) - Java binding for Hunspell
 - [JaSpell](https://jaspell.sourceforge.net/) - Pure Java spell checker
 - [Apache Lucene SpellChecker](https://lucene.apache.org/) - Part of Lucene project
 
 ### Maven Resources
+
 - [Maven Central Repository](https://search.maven.org/)
 - [Maven Guides](https://maven.apache.org/guides/)
 - [Maven by Example](https://books.sonatype.com/mvnex-book/reference/index.html)
@@ -580,6 +598,7 @@ mvn install -DskipTests
 ## Changelog
 
 ### 2025-11-13
+
 - Initial CLAUDE.md created
 - Established project structure guidelines
 - Defined development workflows and conventions
@@ -590,6 +609,7 @@ mvn install -DskipTests
 ## Support
 
 For questions or issues:
+
 1. Check existing documentation in README.md
 2. Review Maven plugin documentation
 3. Consult this CLAUDE.md for conventions

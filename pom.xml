@@ -16,11 +16,28 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
         <maven.version>3.8.1</maven.version>
-        <maven-plugin-plugin.version>3.6.4</maven-plugin-plugin.version>
+        <maven-plugin-plugin.version>3.16.0</maven-plugin-plugin.version>
+        <languagetool.version>6.8</languagetool.version>
+        <jackson.version>2.18.0</jackson.version>
     </properties>
+
+    <prerequisites>
+        <maven>${maven.version}</maven>
+    </prerequisites>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Maven Plugin API -->
@@ -51,20 +68,23 @@
         <dependency>
             <groupId>org.languagetool</groupId>
             <artifactId>language-en</artifactId>
-            <version>6.3</version>
+            <version>${languagetool.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.languagetool</groupId>
             <artifactId>languagetool-core</artifactId>
-            <version>6.3</version>
+            <version>${languagetool.version}</version>
         </dependency>
 
         <!-- Jackson for JSON processing -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.15.3</version>
         </dependency>
 
         <!-- Testing -->
@@ -101,20 +121,31 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <failOnWarning>true</failOnWarning>
+                    <usedDependencies>
+                        <!-- Loaded by LanguageTool's language registry. -->
+                        <usedDependency>org.languagetool:language-en</usedDependency>
+                        <!-- Plexus components used by the Maven testing harness. -->
+                        <usedDependency>org.apache.maven:maven-compat</usedDependency>
+                    </usedDependencies>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>analyze-dependencies</id>
+                        <goals><goal>analyze-only</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <release>${maven.compiler.target}</release>
-                    <compilerArgs>
-                        <arg>-proc:full</arg>
-                    </compilerArgs>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.apache.maven.plugin-tools</groupId>
-                            <artifactId>maven-plugin-annotations</artifactId>
-                            <version>${maven-plugin-plugin.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
+                    <!-- Plugin annotations are read by maven-plugin-plugin. -->
+                    <proc>none</proc>
                 </configuration>
             </plugin>
 
@@ -125,15 +156,10 @@
                 <version>${maven-plugin-plugin.version}</version>
                 <configuration>
                     <goalPrefix>spellcheck</goalPrefix>
-                    <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                    <requiredJavaVersion>17</requiredJavaVersion>
+                    <requiredMavenVersion>${maven.version}</requiredMavenVersion>
                 </configuration>
                 <executions>
-                    <execution>
-                        <id>mojo-descriptor</id>
-                        <goals>
-                            <goal>descriptor</goal>
-                        </goals>
-                    </execution>
                     <execution>
                         <id>help-goal</id>
                         <goals>
@@ -163,7 +189,6 @@
                     </pomIncludes>
                     <postBuildHookScript>verify</postBuildHookScript>
                     <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-                    <settingsFile>src/it/settings.xml</settingsFile>
                     <goals>
                         <goal>clean</goal>
                         <goal>verify</goal>

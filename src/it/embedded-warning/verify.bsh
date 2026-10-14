@@ -1,0 +1,11 @@
+import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
+String report = Files.readString(new File(basedir, "target/spellcheck/spellcheck-report.txt").toPath(), StandardCharsets.UTF_8);
+if (!report.contains("Files checked: 1") || !report.contains("Errors found: 1")) {
+    throw new RuntimeException("Unexpected spelling result: " + report);
+}
+if (!new File(basedir, "target/spellcheck/spellcheck-junit.xml").isFile()
+        || !new File(basedir, "target/spellcheck/spellcheck-checkstyle.xml").isFile()) {
+    throw new RuntimeException("Missing XML reports");
+}
+return true;

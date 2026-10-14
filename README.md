@@ -39,6 +39,7 @@ Add the plugin to your `pom.xml`:
 ### CSpell Configuration File Support
 
 The plugin automatically detects and uses CSpell configuration files in your project root. Supported filenames:
+
 - `cspell.json`
 - `.cspell.json`
 - `cSpell.json`
@@ -224,12 +225,14 @@ The plugin supports CSpell's `import` feature to load configuration from other f
 The plugin generates spell check reports in the `target/spellcheck` directory:
 
 ### Text Report (Default)
+
 - `spellcheck-report.txt`: Human-readable text report with all spelling errors
 - Enabled by default with `generateReport=true`
 
 ### CI/CD Integration Reports
 
 #### JUnit XML Report
+
 - **File**: `spellcheck-junit.xml`
 - **Enable**: Set `generateJUnitReport=true`
 - **Format**: JUnit XML format compatible with most CI/CD tools
@@ -243,6 +246,7 @@ The plugin generates spell check reports in the `target/spellcheck` directory:
   - And many other CI/CD platforms
 
 **Example configuration for Jenkins**:
+
 ```xml
 <plugin>
     <groupId>io.nncdevel.maven</groupId>
@@ -256,6 +260,7 @@ The plugin generates spell check reports in the `target/spellcheck` directory:
 ```
 
 In your Jenkinsfile:
+
 ```groovy
 stage('Spell Check') {
     steps {
@@ -270,6 +275,7 @@ stage('Spell Check') {
 ```
 
 #### Checkstyle XML Report
+
 - **File**: `spellcheck-checkstyle.xml`
 - **Enable**: Set `generateCheckstyleReport=true`
 - **Format**: Checkstyle XML format for code quality tools
@@ -280,6 +286,7 @@ stage('Spell Check') {
   - IDE integrations
 
 **Example configuration for Jenkins Warnings NG**:
+
 ```xml
 <plugin>
     <groupId>io.nncdevel.maven</groupId>
@@ -293,6 +300,7 @@ stage('Spell Check') {
 ```
 
 In your Jenkinsfile:
+
 ```groovy
 stage('Spell Check') {
     steps {
@@ -322,10 +330,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Run Spell Check
@@ -354,8 +362,18 @@ spell-check:
 
 ## Requirements
 
-- Java 8 or higher
-- Maven 3.6.0 or higher
+- Java 17 or higher to run Maven and this plugin
+- Maven 3.8.1 or higher
+
+LanguageTool 6.8 runs inside Maven; no HTTP server is required. The runtime Java
+requirement is independent of the target Java version of the project being
+checked. The plugin supports `en-US` and `en-GB` and rejects other language codes.
+Jackson dependencies are aligned with LanguageTool through the Jackson 2.18.0 BOM.
+
+Run `mvn clean verify` to execute unit tests and Maven Invoker consumer tests.
+CI uses Java 17, 21, and 25. Consumer tests cover successful checks, spelling
+failures, warning-only mode, British English, CSpell words, XML report creation,
+and a parallel multi-module build.
 
 ## License
 
@@ -364,6 +382,22 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
+
+### Repository Spell Check
+
+Use the CSpell CLI to check this repository's source code, documentation, and configuration files.
+The setup has been verified with CSpell 10.3.6.
+With CSpell installed, run from the repository root:
+
+```bash
+cspell lint --config cspell.json --no-config-search
+```
+
+See the official [CSpell documentation](https://cspell.org/) and [configuration reference](https://cspell.org/configuration/).
+The root `cspell.json` respects `.gitignore` and excludes build output and integration-test text fixtures containing intentional spelling errors or custom words.
+The configuration itself is excluded because its exception patterns contain those intentional errors.
+Unit-test vocabulary and documentation examples have narrowly scoped exceptions; they are not accepted in production code.
+Add only verified project terms to `words`, and correct ordinary typos in the source.
 
 ## Links
 

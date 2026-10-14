@@ -5,18 +5,19 @@ import io.nncdevel.maven.spellcheck.report.SpellCheckReport;
 import io.nncdevel.maven.spellcheck.report.SpellError;
 import org.apache.maven.plugin.logging.Log;
 import org.languagetool.JLanguageTool;
-import org.languagetool.language.AmericanEnglish;
-import org.languagetool.language.BritishEnglish;
+import org.languagetool.Languages;
 import org.languagetool.rules.RuleMatch;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -46,14 +47,14 @@ public class SpellChecker {
         this.ignoreWords = new HashSet<>();
 
         // Add custom words to ignore
-        if (config.getCustomDictionary() != null && config.getCustomDictionary().exists()) {
+        if (config.getCustomDictionary() != null) {
             loadCustomDictionary(config.getCustomDictionary());
         }
 
         // Add ignore words from configuration
         if (config.getIgnoreWords() != null) {
             for (String word : config.getIgnoreWords()) {
-                ignoreWords.add(word.toLowerCase());
+                ignoreWords.add(word.toLowerCase(Locale.ROOT));
             }
         }
     }
@@ -65,15 +66,13 @@ public class SpellChecker {
      * @return the JLanguageTool instance
      */
     private JLanguageTool createLanguageTool(String language) {
-        if (language == null || language.startsWith("en-US")) {
-            return new JLanguageTool(new AmericanEnglish());
-        } else if (language.startsWith("en-GB")) {
-            return new JLanguageTool(new BritishEnglish());
-        } else {
-            // Default to American English
-            log.warn("Unsupported language: " + language + ". Defaulting to en-US.");
-            return new JLanguageTool(new AmericanEnglish());
+        String languageCode = language == null ? "en-US" : language;
+        if (!"en-US".equals(languageCode) && !"en-GB".equals(languageCode)) {
+            throw new IllegalArgumentException("Unsupported language: " + languageCode
+                + ". Supported languages: en-US, en-GB.");
         }
+        // Language objects are shared; each checker owns its non-thread-safe JLanguageTool.
+        return new JLanguageTool(Languages.getLanguageForShortCode(languageCode));
     }
 
     /**
@@ -85,12 +84,13 @@ public class SpellChecker {
     private void loadCustomDictionary(File dictionaryFile) throws IOException {
         log.debug("Loading custom dictionary from: " + dictionaryFile.getAbsolutePath());
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(dictionaryFile))) {
+        try (BufferedReader reader = Files.newBufferedReader(dictionaryFile.toPath(),
+                Charset.forName(config.getEncoding()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (!line.isEmpty() && !line.startsWith("#")) {
-                    ignoreWords.add(line.toLowerCase());
+                    ignoreWords.add(line.toLowerCase(Locale.ROOT));
                 }
             }
         }
@@ -135,6 +135,7 @@ public class SpellChecker {
 
         try {
             List<RuleMatch> matches = languageTool.check(content);
+            List<Integer> lineStarts = getLineStarts(content);
 
             for (RuleMatch match : matches) {
                 // Only report spelling errors, not grammar errors
@@ -142,14 +143,18 @@ public class SpellChecker {
                     String word = content.substring(match.getFromPos(), match.getToPos());
 
                     // Skip words that are in the ignore list
-                    if (ignoreWords.contains(word.toLowerCase())) {
+                    if (ignoreWords.contains(word.toLowerCase(Locale.ROOT))) {
                         continue;
                     }
 
+                    int lineIndex = Collections.binarySearch(lineStarts, match.getFromPos());
+                    if (lineIndex < 0) {
+                        lineIndex = -lineIndex - 2;
+                    }
                     SpellError error = new SpellError(
                         file,
-                        match.getLine() + 1,
-                        match.getColumn() + 1,
+                        lineIndex + 1,
+                        match.getFromPos() - lineStarts.get(lineIndex) + 1,
                         word,
                         match.getMessage(),
                         match.getSuggestedReplacements()
@@ -168,9 +173,32 @@ public class SpellChecker {
                 }
             }
 
-        } catch (Exception e) {
-            log.warn("Error checking file " + file.getName() + ": " + e.getMessage());
+        } catch (RuntimeException e) {
+            throw new IOException("Error checking file " + file.getAbsolutePath(), e);
         }
+    }
+
+    /**
+     * Finds line starts for one-based report positions, including CRLF and CR text.
+     *
+     * @param content the checked text
+     * @return UTF-16 offsets of each line start
+     */
+    private List<Integer> getLineStarts(String content) {
+        List<Integer> starts = new ArrayList<>();
+        starts.add(0);
+        for (int index = 0; index < content.length(); index++) {
+            char character = content.charAt(index);
+            if (character == '\r') {
+                if (index + 1 < content.length() && content.charAt(index + 1) == '\n') {
+                    index++;
+                }
+                starts.add(index + 1);
+            } else if (character == '\n') {
+                starts.add(index + 1);
+            }
+        }
+        return starts;
     }
 
     /**
@@ -182,8 +210,7 @@ public class SpellChecker {
      */
     private String readFile(File file) throws IOException {
         Charset charset = Charset.forName(config.getEncoding());
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        return new String(bytes, charset);
+        return Files.readString(file.toPath(), charset);
     }
 
     /**

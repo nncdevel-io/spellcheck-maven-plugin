@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en-US",
+  "useGitignore": true,
+  "files": [
+    "**/*.{java,md,txt,json,xml,yml,yaml}",
+    ".github/**/*.yml",
+    "cspell.json.example"
+  ],
+  "ignorePaths": [
+    "/cspell.json",
+    "target/**",
+    "node_modules/**",
+    "src/it/**/src/main/resources/sample.txt"
+  ],
+  "words": [
+    "apos",
+    "databind",
+    "fasterxml",
+    "helpmojo",
+    "Izuno",
+    "LanguageTool",
+    "mikepenz",
+    "Morfologik",
+    "mvnw",
+    "nncdevel",
+    "SonarQube",
+    "Temurin"
+  ],
+  "ignoreRegExpList": [
+    "/(?<=-)D(?=[a-z])/g"
+  ],
+  "overrides": [
+    {
+      "filename": "src/test/**/*.java",
+      "ignoreRegExpList": [
+        "/\\b(?:anotherword|codexword|colour|correkt|customword|ignoreword|incorect|misspeled|occurence|recieve|speling|testword)\\b/g"
+      ]
+    },
+    {
+      "filename": "src/it/embedded-success/cspell.json",
+      "ignoreRegExpList": ["/\\bcodexword\\b/g"]
+    },
+    {
+      "filename": "README.md",
+      "ignoreRegExpList": ["/\\b(?:customword[12]?|projectspecific)\\b/g"]
+    },
+    {
+      "filename": "docs/superpowers/plans/2026-10-14-java25.md",
+      "ignoreRegExpList": ["/`speling`/g"]
+    }
+  ]
+}

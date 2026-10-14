@@ -189,7 +189,7 @@ public class SpellCheckMojo extends AbstractMojo {
                 );
             }
 
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             throw new MojoExecutionException("Error during spell check execution", e);
         }
     }
